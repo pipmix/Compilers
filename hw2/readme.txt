@@ -1,0 +1,3 @@
+make
+
+./me < input.txt
