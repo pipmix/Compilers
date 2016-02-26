@@ -1,16 +1,16 @@
 
-
-//-------------------------------------------------------
 %{
-#  include <stdio.h>
+	#include <stdio.h>
+	int yylex(void);
+	void yyerror(char const*);
 %}
-//-------------------------------------------------------
+
 
 
 %token NUMBER ADD SUB MUL DIV ABS OP CP EOL END BEG SEMI
 
 
-//-------------------------------------------------------
+
 %%
 
 
@@ -32,18 +32,9 @@ term: NUMBER { $$ = $1; }
 %%
 
 
-//-------------------------------------------------------
 
 
 
-main(){
-
-  yyparse();
+void yyerror(char const *s){
+	fprintf(stderr, "error: %s\n", s);
 }
-
-yyerror(char *s){
-  fprintf(stderr, "error: %s\n", s);
-}
-
-
-//-------------------------------------------------------

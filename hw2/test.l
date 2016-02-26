@@ -1,8 +1,13 @@
+
+
 %{
 
-#include "test.tab.h"
+	#include "test.tab.h"
+	#include <stdio.h>
 
 %}
+
+%option noyywrap
 
 %%
 
