@@ -24,20 +24,17 @@ int yylineno = 0;
 ";"		{ return SEMI; }
 "{"		{ return OB; }
 "}"		{ return CB; }
+"="		{ return EQL; }
 
 "begin" 	{ return BEG; } 
 "end" 		{ return END; } 
 
 [0-9]+		{ 
-			printf("Saw an integer: %s\n", yytext);
-			//yylval.value = atof(yytext);
-			//yylval = atoi(yytext);
-			yylval.argtype = "int";
+			ylval->d = atof(yytext); 
 			return NUMBER; 
 		}
 [a-zA-Z]+	{ 
-			struct SymbolTable *sp = symbolLookup(yytext);
-			yylval.symp = sp;
+			yylval.symbol = lookup(yytext);
 			return NAME; 
 		}
 
