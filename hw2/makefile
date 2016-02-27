@@ -6,5 +6,3 @@ test:	test.l test.y
 	gcc -c test.tab.c lex.yy.c -lfl
 	g++ main.cpp test.tab.o lex.yy.o -o me
 	-rm test.tab.h test.tab.c lex.yy.c test.tab.o lex.yy.o
-	./me < input.txt
-

@@ -1,13 +1,39 @@
 
 %{
 	#include <stdio.h>
+	#include "SymbolTable.h"
+
+	#define YYSTYPE double
+	#include <math.h>
+
+
+
 	int yylex(void);
 	void yyerror(char const*);
+
 %}
 
+%union {
+	char* argtype;
+	struct SymbolTable* symp;
+}
 
 
-%token NUMBER ADD SUB MUL DIV ABS OP CP EOL END BEG SEMI
+
+%token <argtype> NUMBER 
+%token <symp> NAME
+%type <argtype> expression
+
+//%token NUMBER NAME
+
+%token EOL END BEG SEMI
+
+%left SUB ADD
+%left MUL DIV
+%token CP OP
+%token CB OB
+
+
 
 
 
@@ -27,6 +53,7 @@ muldiv: term
 
 term: NUMBER { $$ = $1; }
 ;
+
 
 
 %%
