@@ -67,9 +67,9 @@ start : line
 
 line : 
 		line SEMI
-         | 	line state SEMI
-         | 	line error SEMI { cout << ">>> "; yyclearin; } 
-         |
+	| 	line state SEMI
+	| 	line error SEMI { cout << ">>> "; yyclearin; } 
+	|
 ;
 
 state: 		NAME EQL exp 	{ 	symbolTable[$1] = $3;
