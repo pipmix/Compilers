@@ -1,31 +1,34 @@
-
-
 %{
-
-	#include "test.tab.h"
-	#include <stdio.h>
-
+	#include "test.tab.hpp"
 %}
 
 %option noyywrap
 
 %%
 
-"+"	{ return ADD; }
-"-"	{ return SUB; }
-"*"	{ return MUL; }
-"/"	{ return DIV; }
-\n	{ return EOL; }
-"("	{ return OP; }
-")"	{ return CP; }
-";"	{ return SEMI; }
+"+"		return ADD;
+"-"		return SUB; 
+"*"		return MUL;
+"/"		return DIV;	
+"("		return OP;
+")"		return CP;
+";"		return SEMI;
+"="		return EQL;
+"**"		return EX;
+[ \t\n]		; 
 
-"begin" { return BEG; } 
-"end" 	{ return END; } 
 
-[0-9]+	{ yylval = atoi(yytext); return NUMBER; }
-[a-zA-Z]+    ; // STRING
 
-[ \t]		; // WHITESPACE
+
+"begin"		return BEG;
+"end"		return END;
+"output"	return OUTP;
+
+
+
+[0-9]+		{ 	yylval.value = atoi(yytext);
+			return NUMBER; }
+[a-zA-Z][a-zA-Z0-9]* { 	yylval.str = strdup(yytext);
+			return NAME; }
 
 %%

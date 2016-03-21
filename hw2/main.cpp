@@ -1,21 +1,24 @@
+
+//	**** PROGRAM BY 
+
+//	Matthew Escobedo
+//	Alexandra Woods
+
+//	****
+
+
 #include <iostream>
 using namespace std;
 
-extern "C"{
-	int yyparse();
-	void yyerror(const char *);
-	int yylex();
-}
+extern int yyparse();
+extern void yyerror(const char *);
+extern int yylex();
 
 
 int main(){
 
 	int result = yyparse();
-	if (result) cout << "Valid" << endl;
-	else
-	cout << "Invalid" << endl;
-
-	return result;
+	return 0;
 
 
 }
