@@ -25,9 +25,9 @@
 "begin"		return BEG;
 "end"		return END;
 "output"	return OUTP;
-"if"		retrun IFSTATE;
+"if"		return IFSTATE;
 "do"		return DOSTATE;
-"continue"	reutrn CONTINUESTATE;
+"continue"	return CONTINUESTATE;
 
 "int"		return VARINT;
 "string"	return VARSTR;

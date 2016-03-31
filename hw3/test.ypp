@@ -45,7 +45,7 @@ int rCount = 0;
 %token BEG END
 
 
-%token EQL
+%token EQL GT LT
 %left ADD SUB
 %left MUL DIV
 %left CP OP
@@ -55,6 +55,13 @@ int rCount = 0;
 %token SEMI
 %token NL
 
+
+
+%token DOTLT DOTEQ DOTNEQ DOTGE
+%token FUNCPRINTLINE FUNCPUSHI FUNCPRINTINT FUNCPRINTSTRING FUNCPRINTS FUNCPRINTI
+%token DOSTATE CONTINUESTATE IFSTATE FUNCMAIN
+
+%token VARSTR VARINT
 
 
 
