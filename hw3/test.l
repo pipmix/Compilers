@@ -17,8 +17,13 @@
 "**"		return EX;
 ">"		return GT;
 "<"		return LT;
+","		return COMMA;
+["]		return QUOTE;
 [ \t]		; 
 [\n]		return NEWLINE;
+
+
+
 
 
 "main() : void"	return FUNCMAIN;
@@ -40,7 +45,7 @@
 "printi"	return FUNCPRINTI;
 "prints"	return FUNCPRINTS;
 
-"printLine"	return FUNCPRINTLINE;
+"printLine()"	return FUNCPRINTLINE;
 "pushi"		return FUNCPUSHI;
 "printInt"	return FUNCPRINTINT;
 "printString"	return FUNCPRINTSTRING;
@@ -49,6 +54,7 @@
 ".eq."		return DOTEQ;
 ".neq."		return DOTNEQ;
 ".ge."		return DOTGE;
+
 
 
 
