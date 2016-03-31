@@ -17,7 +17,8 @@
 "**"		return EX;
 ">"		return GT;
 "<"		return LT;
-[ \t\n]		; 
+[ \t]		; 
+[\n]		return NEWLINE;
 
 
 "main() : void"	return FUNCMAIN;
@@ -30,7 +31,11 @@
 "continue"	return CONTINUESTATE;
 
 "int"		return VARINT;
-"string"	return VARSTR;
+"string"	return VARSTRING;
+"char"		return VARCHAR;
+"long"		return VARLONG;
+"enum"		return VARENUM;
+
 
 "printi"	return FUNCPRINTI;
 "prints"	return FUNCPRINTS;
