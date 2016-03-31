@@ -15,11 +15,12 @@
 ";"		return SEMI;
 "="		return EQL;
 "**"		return EX;
+"%"		return MOD;
 ">"		return GT;
 "<"		return LT;
-","		return COMMA;
+"++++"		return COMMA;
 ["]		return QUOTE;
-[ \t]		; 
+[ \t,]		; 
 [\n]		return NEWLINE;
 
 
@@ -28,6 +29,8 @@
 
 "main() : void"	return FUNCMAIN;
 
+
+"else"		return ELSESTATE;
 "begin"		return BEG;
 "end"		return END;
 "output"	return OUTP;
@@ -54,6 +57,14 @@
 ".eq."		return DOTEQ;
 ".neq."		return DOTNEQ;
 ".ge."		return DOTGE;
+
+"and"		return ANDAND;
+"or"		return OROR;
+
+\"(\\.|[^\\"])*\" {
+			yylval.str = strdup(yytext);		
+			return STRINGTEXT;
+		}
 
 
 

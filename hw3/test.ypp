@@ -34,6 +34,9 @@ int rCount = 0;
 
 %token <value> NUMBER
 %token <str> NAME
+%token <str> STRINGTEXT
+
+
 
 
 %token EOL  
@@ -41,29 +44,43 @@ int rCount = 0;
 %token FUNC
 %token OUT
 
+%token ANDAND OROR
+
+
+
 %token BEG END
 
+
+%left CP OP
+%left DOTLT DOTEQ DOTNEQ DOTGE
 %token EQL GT LT
 %left ADD SUB
-%left MUL DIV
-%left CP OP
-%token EX
+%left MUL DIV MOD
+%left EX
+
+
+
+
+
+
 %token <value> OUTP
 
 
 %token SEMI QUOTE COMMA
 %token NEWLINE
 
-%token DOTLT DOTEQ DOTNEQ DOTGE
+
 %token FUNCPRINTLINE FUNCPUSHI FUNCPRINTINT FUNCPRINTSTRING FUNCPRINTS FUNCPRINTI
-%token DOSTATE CONTINUESTATE IFSTATE FUNCMAIN
+%token DOSTATE CONTINUESTATE IFSTATE FUNCMAIN ELSESTATE
 
 %token VARSTRING VARINT VARCHAR VARLONG VARENUM;
 
 
 
-%type <value> exp 
+%type <value> exp
+
 %type <value> state
+
 
 %%
 
@@ -101,7 +118,7 @@ state: 		NAME EQL exp 	{ 	symbolTable[$1] = $3;
 	|	END		{	$$ = yylval.value; 
 					cout << "}" << endl;	}
 	| 	OUTP exp { cout << "\tprintString (\"" << $2 << "\");" << endl; }
-	| 	FUNCPRINTI exp { cout << "\tprintString (\"" << $2 << "\");" << endl; }
+	| 	FUNCPRINTI exp { cout << "\tprintINT: " << $2  << endl; }
 	| 	FUNCPRINTLINE  { cout << "NEWLINE FUC\n" << endl; }
 	|	FUNCPRINTS OP QUOTE NAME QUOTE CP {
 					cout << "print string = " << $4 << endl;
@@ -109,15 +126,25 @@ state: 		NAME EQL exp 	{ 	symbolTable[$1] = $3;
 	|	FUNCPRINTS OP QUOTE QUOTE CP {
 					cout << "print string = " << " " << endl;
 					}
+
+	|	FUNCPRINTS OP  STRINGTEXT  CP {
+					cout << "print string = " << $3 << endl;
+
+				}
 	|	NUMBER CONTINUESTATE	{
 						cout << $1 << " continue" << endl;
 					}
-	|	DOSTATE NUMBER NAME EQL NUMBER COMMA NUMBER {
+	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER {
 						cout << "do " << $2 << " " << $3 << " " << $5 << endl;
 					}
-	|	DOSTATE NUMBER NAME EQL NUMBER COMMA NUMBER COMMA NUMBER{
+	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER NUMBER{
 						cout << "do " << "LABEL: " << $2 << " " << $3 << " = " << $5 << " Increment: " << $7 << endl;
 					}
+	|	DOSTATE NUMBER NAME EQL NUMBER NAME NUMBER{
+						cout << "do " << "LABEL: " << $2 << " " << $3 << " = " << $5 << " Increment: " << $7 << endl;
+					}
+	|	IFSTATE exp		{cout << "If Statement is: " << $2 << endl;}
+	|	ELSESTATE		{cout << "ELSE\n";}
 	
 
 
@@ -129,19 +156,72 @@ state: 		NAME EQL exp 	{ 	symbolTable[$1] = $3;
 exp:	
 		NUMBER		{	$$ = yylval.value; 	}
 	|       NAME		{	$$ = symbolTable[$1];	}
+
+
+	|	exp DOTLT exp 	{ 
+					if($1 < $3) $$ = 1;
+					else $$ = 0;
+					cout << "$1: " << $1 << endl;
+					cout << "$3: " << $3 << endl;
+
+				}
+	|	exp DOTEQ exp	{ 
+					if($1 == $3) $$ = 1;
+					else $$ = 0;
+					
+					
+
+		}
+	|	exp DOTNEQ exp	{ 
+
+					if($1 != $3) $$ = 1;
+					else $$ = 0;
+		}
+	|	exp DOTGE exp	{ 
+					if($1 >= $3) $$ = 1;
+					else $$ = 0;
+		}
+	|	exp ANDAND exp	{ 
+					if($1 && $3) $$ = 1;
+					else $$ = 0;
+		}
+	|	exp OROR exp	{ 
+					if($1 || $3) $$ = 1;
+					else $$ = 0;
+		}
+
+
+
+
+
+
 	|	OP exp CP	{	$$ = $2; 		}
+
+
+
+
+
+
 	|	exp ADD exp 	{	$$ = $1 + $3; 		
 					if (rCount > 13) rCount = 0;
 					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
 					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
 					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " + " << "r" << (rCount - 1) << ";" << endl; 
 }
+
+
 	|	exp SUB exp	{	$$ = $1 - $3;
 					if (rCount > 13) rCount = 0;
 					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
 					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
 					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " - " << "r" << (rCount - 1) << ";" << endl; 
  		}
+
+
+	|	exp MOD exp	{	$$ = $1 % $3; }
+
+
+
 	|	exp MUL exp	{	$$ = $1 * $3;
 					if (rCount > 13) rCount = 0;
 					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
@@ -154,6 +234,8 @@ exp:
 					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
 					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " / " << "r" << (rCount - 1) << ";" << endl; 
 		}
+
+
 	|	exp EX exp 	{ 	$$ = pow( (double)$1, (double)$3);
 					
 					int power = 1;
@@ -166,6 +248,7 @@ exp:
 					}
 				
 				}
+
 
 
 ;			
