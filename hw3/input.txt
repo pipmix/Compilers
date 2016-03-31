@@ -1,0 +1,10 @@
+begin;
+cat = 5 + 5;
+dog = 3 + 3;
+sir = 5 ** 2;
+output ( dog ) ;
+
+moo = 6 * 6 + 2 + (1 * 2);
+fifty = 9 + 9 + dog;
+
+end;

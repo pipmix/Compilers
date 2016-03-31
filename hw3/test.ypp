@@ -1,0 +1,144 @@
+%{
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <string>
+#include <map>
+#include <math.h>
+
+using namespace std;
+
+extern int yylex();
+extern int yyparse();
+extern FILE* yyin;
+
+void yyerror(char const*);
+
+map<string, int> symbolTable;
+
+int rCount = 0;
+
+
+%}
+
+%union {
+
+	int value;
+	char* str;
+}
+
+%error-verbose
+
+%token <value> NUMBER
+%token <str> NAME
+
+
+%token EOL  
+
+
+
+%token FUNC
+%token OUT
+
+
+%token BEG END
+
+
+%token EQL
+%left ADD SUB
+%left MUL DIV
+%left CP OP
+%token EX
+%token <value> OUTP
+
+%token SEMI
+%token NL
+
+
+
+
+%type <value> exp 
+%type <value> state
+
+
+
+%%
+
+
+start : line
+;
+
+
+
+line : 
+		line SEMI
+	| 	line state SEMI
+	| 	line error SEMI { cout << ">>> "; yyclearin; } 
+	|
+;
+
+state: 		NAME EQL exp 	{ 	symbolTable[$1] = $3;
+					//cout << $3 << endl; 
+					$$ = $3;	}
+	|	BEG		{	$$ = yylval.value; 
+					cout << "int r0, r1, r2, r3, r4, r5, r6, r7,r8, r9, r10, r11, r12, r13, r14, r15, r16; \nint *iptr1; \nchar *cptr1; \nchar *fp, *sp;\nchar globalData[1024];\nchar moreGlobalData[1024];\n\nmain()\n{\n" ;
+					cout << "\tinitstack();" << endl;	}
+	|	END		{	$$ = yylval.value; 
+					cout << "}" << endl;	}
+	| 	OUTP exp { cout << "\tprintString (\"" << $2 << "\");" << endl; }
+
+
+
+
+;
+
+exp:	
+		NUMBER		{	$$ = yylval.value; 	}
+	|       NAME		{	$$ = symbolTable[$1];	}
+	|	OP exp CP	{	$$ = $2; 		}
+	|	exp ADD exp 	{	$$ = $1 + $3; 		
+					if (rCount > 13) rCount = 0;
+					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
+					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
+					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " + " << "r" << (rCount - 1) << ";" << endl; 
+}
+	|	exp SUB exp	{	$$ = $1 - $3;
+					if (rCount > 13) rCount = 0;
+					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
+					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
+					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " - " << "r" << (rCount - 1) << ";" << endl; 
+ 		}
+	|	exp MUL exp	{	$$ = $1 * $3;
+					if (rCount > 13) rCount = 0;
+					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
+					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
+					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " * " << "r" << (rCount - 1) << ";" << endl; 
+ 		}
+	|	exp DIV exp	{	$$ = $1 / $3;
+					if (rCount > 13) rCount = 0;
+					cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
+					cout << "\tr" << rCount++ << " = " << $3 << ";" << endl; 
+					cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " / " << "r" << (rCount - 1) << ";" << endl; 
+		}
+	|	exp EX exp 	{ 	$$ = pow( (double)$1, (double)$3);
+					
+					int power = 1;
+					for(int i=1; i <= $3; i++){
+     						power *= $1;
+						if (rCount > 13) rCount = 0;
+
+						cout << "\tr" << rCount++ << " = " << $1 << ";" << endl;
+						cout << "\tr" << rCount++ << " = " << "r" << (rCount - 2) << " * " << "r" << (rCount - 2) << ";" << endl; 
+					}
+				
+				}
+
+
+;			
+
+%%
+
+void yyerror(char const *s){
+	fprintf(stderr, "error: %s\nERROR", s);
+}
