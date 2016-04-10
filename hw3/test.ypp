@@ -7,6 +7,9 @@
 #include <map>
 #include <math.h>
 #include <vector>
+#include "Stack.h"
+#include "SymbolTable.h"
+#include <sstream>
 using namespace std;
 
 extern int yylex();
@@ -15,11 +18,29 @@ extern FILE* yyin;
 
 void yyerror(char const*);
 
-map<string, int> symbolTable;
+map<string, string> symbolTable;
 
 vector<int> doLoops;
 
-int rCount = 0;
+int rCount = 1;
+
+
+
+struct DoStruct{
+
+	int intStart;
+	int intEnd;
+	int intJump;
+
+	DoStruct(int x, int y, int z){
+		intStart = x;
+		intEnd = y;
+		intJump = z;
+	}
+
+};
+
+int regCounter = 0;
 
 
 %}
@@ -54,8 +75,8 @@ int rCount = 0;
 %token DOSTATE CONTINUESTATE IFSTATE FUNCMAIN ELSESTATE
 %token VARSTRING VARINT VARCHAR VARLONG VARENUM;
 
-%type <value> exp
-%type <value> state
+%type <str> exp
+%type <str> state
 
 
 %%
@@ -74,18 +95,34 @@ line :
 ;
 
 state: 		
-		NAME EQL exp 			{ 	symbolTable[$1] = $3; cout << $3 << endl; }
-	|	VARINT NAME			{	cout << $$ << endl;}
-	|	VARINT NAME EQL exp		{symbolTable[$2] = $4; }
-	|	FUNCMAIN			{	$$ = yylval.value;}
-	|	BEG				{	$$ = yylval.value; }
-	|	END				{	$$ = yylval.value; cout << "}" << endl;	}
-	| 	OUTP exp 			{ cout << "\tprintString (\"" << $2 << "\");" << endl; }
-	| 	FUNCPRINTI exp 			{ cout << "\tprintINT: " << $2  << endl; }
-	| 	FUNCPRINTLINE  			{ cout << "NEWLINE FUC\n" << endl; }
-	|	FUNCPRINTS OP QUOTE NAME QUOTE CP { cout << "print string = " << $4 << endl;}
-	|	FUNCPRINTS OP QUOTE QUOTE CP { cout << "print string = " << " " << endl; }
-	|	FUNCPRINTS OP  STRINGTEXT  CP { cout << "print string = " << $3 << endl; }
+		NAME EQL exp 			{;	
+
+
+						}
+	|	VARINT NAME			{
+
+					symbolTable[$2] = regCounter++;
+					cout << "!!!exp name: " << $2 << " reg value = " << symbolTable.find($2)->second << "  " << endl;
+						
+
+	}
+	|	VARINT NAME EQL exp		{;	 }
+	|	FUNCMAIN			{
+
+								cout << "\nint r0, r1, r2, r3, r4, r5, r6, r7;\nint *iptr1;\nchar *cptr1;\nchar *fp, *sp;\n\nmain()\n{\ninitstack();\n" ;	
+						}
+	|	BEG				{;	 }
+	|	END				{;		}
+	| 	OUTP exp 			{;  }
+	| 	FUNCPRINTI exp 			{; 
+
+				
+						
+						}
+	| 	FUNCPRINTLINE  			{ ; }
+	|	FUNCPRINTS OP QUOTE NAME QUOTE CP { ;}
+	|	FUNCPRINTS OP QUOTE QUOTE CP { ; }
+	|	FUNCPRINTS OP  STRINGTEXT  CP { ; }
 	|	NUMBER CONTINUESTATE	{ cout << $1 << " continue" << endl;}
 	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER { cout << "do " << $2 << " " << $3 << " " << $5 << endl; }
 	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER NUMBER{ cout << "do " << "LABEL: " << $2 << " " << $3 << " = " << $5 << " Increment: " << $7 << endl;}
@@ -95,21 +132,50 @@ state:
 ;
 
 exp:	
-		NUMBER		{	$$ = yylval.value; 	}
-	|       NAME		{	$$ = symbolTable[$1];	}
-	|	exp DOTLT exp 	{	$$ = ($1 < $3); cout << "LT Test: " << $1 << " < "  << $3 << endl;}
-	|	exp DOTEQ exp	{ 	$$ = ($1 == $3); }
-	|	exp DOTNEQ exp	{	$$ = ($1 != $3);}
-	|	exp DOTGE exp	{ 	$$ = ($1 >= $3);}
-	|	exp ANDAND exp	{ 	$$ = ($1 && $3);}
-	|	exp OROR exp	{ 	if($1 || $3) $$ = 1;	else $$ = 0;}
-	|	OP exp CP	{	$$ = $2; 		}
-	|	exp ADD exp 	{	$$ = $1 + $3; 		}
-	|	exp SUB exp	{	$$ = $1 - $3;		}
-	|	exp MOD exp	{	$$ = $1 % $3; }
-	|	exp MUL exp	{	$$ = $1 * $3;}
-	|	exp DIV exp	{	$$ = $1 / $3;}
-	|	exp EX exp 	{ 	$$ = pow( (double)$1, (double)$3);}
+		NUMBER		{	
+
+				stringstream ss;
+  				ss << $1;
+  				string temp_str = ss.str();
+  				char* char_type = (char*) temp_str.c_str();
+  				$$ = char_type;
+
+
+		}
+	|       NAME		{	
+
+				stringstream ss;
+  				ss << regCounter;
+  				string temp = ss.str();
+				char* char_type = (char*) symbolTable.find(temp)->second.c_str();
+				//cout << "exp name: " << $1 << "reg value = " << symbolTable.find($1)->second << endl;
+				$$ = char_type;
+				
+
+	
+				}
+	|	exp DOTLT exp 	{	}
+	|	exp DOTEQ exp	{ 	}
+	|	exp DOTNEQ exp	{	}
+	|	exp DOTGE exp	{ 	}
+	|	exp ANDAND exp	{ 	}
+	|	exp OROR exp	{ 	}
+	|	OP exp CP	{			}
+	|	exp ADD exp 	{		}
+	|	exp SUB exp	{		}
+	|	exp MOD exp	{	 }
+	|	exp MUL exp	{	
+
+			cout << "r" << regCounter++ << " = " <<  $1 << endl;
+			cout << "r" << regCounter++ << " = " << $3 << endl;
+			cout << "r" << regCounter++ << " = " << "r" << regCounter-2 << " * " << "r" << regCounter-1 << ";" << endl;
+
+
+
+
+				}
+	|	exp DIV exp	{	}
+	|	exp EX exp 	{ 	}
 ;			
 
 %%
