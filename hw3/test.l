@@ -12,12 +12,15 @@
 "/"		return DIV;	
 "("		return OP;
 ")"		return CP;
-";"		return SEMI;
+";"		;
 "="		return EQL;
 "**"		return EX;
 "%"		return MOD;
-">"		return GT;
-"<"		return LT;
+
+"["		return LB;
+"]"		return RB;
+
+
 "++++"		return COMMA;
 ["]		return QUOTE;
 [ \t,]		; 
@@ -69,7 +72,7 @@
 
 
 
-[0-9]+		{ 	yylval.value = atoi(yytext);
+[0-9]+		{ 	yylval.str = strdup(yytext);
 			return NUMBER; }
 [a-zA-Z][a-zA-Z0-9]* { 	yylval.str = strdup(yytext);
 			return NAME; }
