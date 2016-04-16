@@ -60,6 +60,8 @@
 ".eq."		return DOTEQ;
 ".neq."		return DOTNEQ;
 ".ge."		return DOTGE;
+".nge."		return DOTNGE;
+".nle."		return DOTNLE;
 
 "and"		return ANDAND;
 "or"		return OROR;

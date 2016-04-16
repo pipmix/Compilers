@@ -21,14 +21,18 @@ void yyerror(char const*);
 
 bool debugVar = 0;
 
+bool startBool = 1;
+
 struct MyArray{
 	int size;
-	int x;
-	int y;
-	int z;
-	MyArray(int ss, int xx, int yy, int zz){
+	int reg;
+	string x;
+	string y;
+	string z;
+	MyArray(int ss, string xx, string yy, string zz){
 		size = ss; x = xx; y = yy; z = zz;
 	}
+	
 };
 
 struct DoLoop{
@@ -103,7 +107,7 @@ int regCounter = 0;
 %token ANDAND OROR
 %token BEG END
 %left CP OP
-%left DOTLT DOTEQ DOTNEQ DOTGE
+%left DOTLT DOTEQ DOTNEQ DOTGE DOTNGE DOTNLE
 %token EQL GT LT
 %left ADD SUB
 %left MUL DIV MOD
@@ -115,11 +119,14 @@ int regCounter = 0;
 %token DOSTATE CONTINUESTATE IFSTATE FUNCMAIN ELSESTATE
 %token VARSTRING VARINT VARCHAR VARLONG VARENUM;
 
+
+
 %token LB RB
 
 
 %type <str> exp
 %type <str> state
+%type <str> compare
 
 
 %%
@@ -134,17 +141,43 @@ line :
 	|	line state NEWLINE
 	| 	line state SEMI
 	| 	line error SEMI { cout << ">>> "; yyclearin; } 
+
 	|
 ;
 
 state: 		
 		NAME EQL exp 			{
+							
 					
-							if (debugVar) cout << "\t" << $1 << " at r" << symbolTable.find($1)->second << " = " << $3 << endl;
-							else cout << "r" << symbolTable.find($1)->second << " = " << $3 << endl;
+							if (debugVar) cout << "\t" << $1 << " at r" << symbolTable.find($1)->second << " = r" << $3 << endl;
+							
+
+							if (isalpha( $3[0])){
+
+
+				if($3[0] == 'r'){
+			
+					cout << "\tr" << symbolTable.find($1)->second << " = " << $3 << ";" <<endl;
+				}
+				else
+		cout << "\tr" << symbolTable.find($1)->second << " = r" << symbolTable.find($3)->second << ";" <<endl;
+					
+
+
+
+
+
+}
+							else cout << "\tr" << symbolTable.find($1)->second << " = " << $3 << ";" <<endl;
+
+
+
+
 							//cout << symbolTable[$3] << " = " << "3" << endl;
 
 						}
+	|	state EQL exp {			
+						cout << "\tr" << $1 << " = " << $3 << ";" << endl ;}
 	|	VARINT NAME			{	
     							ostringstream intToString;
     							int tNum = regCounter++;
@@ -168,10 +201,60 @@ state:
 
 
 						}
+	|	VARINT NAME OP NUMBER NUMBER NUMBER CP {
+
+						MyArray* aT = new MyArray(3, $4, $5, $6);
+						symbolTableA[$2] = aT;	
+
+			
+					
+				
+	}
+	|	NAME OP NUMBER NUMBER NUMBER CP EQL	{
+						MyArray* aT = new MyArray(3, $3, $3, $4);
+						symbolTableA[$1] = aT;	
+//int A = stoi( symbolTableA.find($1)->second->size );
+int A = 5555555;
+cout << "Arrray TeST::: " << A << endl;
+//Array[ A, B, C ]
+//I = 4, size of int
+
+//D = C * I
+//E = D * B
+
+//Array[ X, Y, Z ] = ( X * E ) + ( Y * D ) + (Z * I)
+
+				
+
+	
+	}
+	| 	state EQL exp 			{
+				cout << "test" << endl;
+	}
 	|	VARINT NAME LB NUMBER RB	{
+
+    							ostringstream intToString;
+    							int tNum = regCounter++;
+    							intToString << tNum;
+							symbolTable[$2] = intToString.str();
+							if (debugVar)cout << "\t" << $2 << "  r" << symbolTable.find($2)->second << "  debugText " << endl;
+
+							MyArray* mA = new MyArray(1,$4,"Blank","Blank");
+							symbolTableA[$2] = mA;
+							if (debugVar)cout << "ARRAY DEBUG: " << mA->size << "  " << mA->x << "  " << mA->y << "  " << mA->z << endl; 
 
 						}
 	|	VARINT NAME LB NUMBER NUMBER RB	{
+
+    							ostringstream intToString;
+    							int tNum = regCounter++;
+    							intToString << tNum;
+							symbolTable[$2] = intToString.str();
+							if (debugVar)cout << "\t" << $2 << "  r" << symbolTable.find($2)->second << "  debugText " << endl;
+
+							MyArray* mA = new MyArray(2,$4,$5,"Blank");
+							symbolTableA[$2] = mA;
+							if (debugVar)cout << "ARRAY DEBUG: " << mA->size << "  " << mA->x << "  " << mA->y << "  " << mA->z << endl; 
 
 						}
 	|	VARINT NAME LB NUMBER NUMBER NUMBER RB	{
@@ -181,159 +264,571 @@ state:
     							int tNum = regCounter++;
     							intToString << tNum;
 							symbolTable[$2] = intToString.str();
-							cout << "\t" << $2 << "  r" << symbolTable.find($2)->second << "  debugText " << endl;
+							if (debugVar)cout << "\t" << $2 << "  r" << symbolTable.find($2)->second << "  debugText " << endl;
 
-							MyArray* mA = new MyArray(1,1,1,1);
+							MyArray* mA = new MyArray(3,$4,$5,$6);
 							symbolTableA[$2] = mA;
+							if (debugVar)cout << "ARRAY DEBUG: " << mA->size << "  " << mA->x << "  " << mA->y << "  " << mA->z << endl; 
 
 
 
 
 						}
+
+	|	NAME LB exp exp exp RB	{
+							if (debugVar)cout << "BRACKET" << endl;
+							string tempReg = symbolTable.find($1)->second;
+				
+							int A = std::stoi(symbolTableA.find($1)->second->x);
+							int B = std::stoi(symbolTableA.find($1)->second->y);
+							int C = std::stoi(symbolTableA.find($1)->second->z);
+
+							int D = C * 4;
+							int E = D * B;
+
+							if (debugVar)cout << A << " " << B << " " << C << endl;
+
+							//Array[ X, Y, Z ] = ( X * E ) + ( Y * D ) + (Z * I)
+
+							string str8 = "*(globalData + 5";
+							string str9 = ")" ;
+							string str10 = str8 + str9;
+
+							$$ = (char*)str10.c_str();
+	}
+	|	NAME LB exp exp RB	{
+							if (debugVar)cout << "BRACKET" << endl;
+							string tempReg = symbolTable.find($1)->second;
+				
+							int A = std::stoi(symbolTableA.find($1)->second->x);
+							int B = std::stoi(symbolTableA.find($1)->second->y);
+							int D = B * 4;
+							int E = D * B;
+							if (debugVar)cout << A << " " << B << endl;
+							//Array[ A, B, C ]
+							//I = 4, size of int
+							//D = C * I
+							//E = D * B
+
+							//Array[ X, Y, Z ] = ( X * E ) + ( Y * D ) + (Z * I)
+							string str8 = "*(globalData + 5";
+							string str9 = ")" ;
+							string str10 = str8 + str9;
+							$$ = (char*)str10.c_str();
+	}
+	|	NAME LB exp RB	{
+							if (debugVar)cout << "BRACKET" << endl;
+							string tempReg = symbolTable.find($1)->second;
+				
+							int A = std::stoi(symbolTableA.find($1)->second->x);
+
+
+							if (debugVar)cout << A << endl;
+							int ttest3 = stoi($3);
+							int tttest =  ttest3 + A;
+
+							//Array[ X, Y, Z ] = ( X * E ) + ( Y * D ) + (Z * I)
+							string str8 = "*(globalData + 5";
+							string str12 = IntToString(tttest);
+							string str9 = ")" ;
+							string str10 = str8 + str12 + str9;
+							$$ = (char*)str10.c_str();
+	}
 	|	FUNCMAIN			{
 
-								cout << "\nint r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21;\nint *iptr1;\nchar *cptr1;\nchar *fp, *sp;\n\nmain()\n{\n\tinitstack();\n" ;	
+								cout << "int r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17, r18, r19, r20, r21;\nint *iptr1;\nchar *cptr1;\nchar *fp, *sp;\n\nchar globalData[1024];\nchar moreGlobalData[1024];\n\nmain()\n" ;	
 						}
-	|	BEG				{;	 }
+	|	BEG				{ cout << "{" << endl;	
+							if (startBool){
+								startBool = false;
+								cout << "\tinitstack();"<<endl;
+							}
+ }
 	|	END				{
 							cout << "}" << endl;		
 						}
 	| 	OUTP exp 			{;  }
 	| 	FUNCPRINTI OP NAME CP 		{
-							cout << "\tprinti ( r" << symbolTable.find($3)->second << " ); " << endl;
+							cout << "\tprintInt ( r" << symbolTable.find($3)->second << " );" << endl;
 				
 						
 						}
 	| 	FUNCPRINTI OP NUMBER CP 	{
-							
-							cout << "\tprinti ( " << $3 << " )" << endl;
+							cout << "\tr" << regCounter << " = " << $3 << ";" << endl;
+							cout << "\tprintInt ( r" << regCounter << " )" << ";" << endl;
+							regCounter++;
 				
 						
 						}
-	| 	FUNCPRINTLINE  			{ 
-							cout << "\tPrintLine" << endl; 
-						}
-	|	FUNCPRINTS OP QUOTE NAME QUOTE CP { ;}
-	|	FUNCPRINTS OP QUOTE QUOTE CP { ; }
-	|	FUNCPRINTS OP  STRINGTEXT  CP { ; }
-	|	NUMBER CONTINUESTATE	{ 
 
-			cout << "\tif( " << symbolTableDL.find($1)->second->arg1 << " < " << symbolTableDL.find($1)->second->arg2 << " ) goto StartDoLoop" << $1 << ";" << endl;
+	|	FUNCPRINTI OP state CP 		{
+
+							//cout << "printInt( " << $3 << " ) ;" << endl;
+
+							cout << "\tr" << regCounter << " = " << $3 << ";"<< endl;
+							//cout << $3 << endl;
+							cout << "\tprintInt( r" << regCounter << " ) ;" << endl; 
+							regCounter++;
+
+	}
+	| 	FUNCPRINTLINE  			{ 
+							cout << "\tprintline ();" << endl; 
+						}
+	|	FUNCPRINTS OP QUOTE NAME QUOTE CP { cout << "printString();";}
+	|	FUNCPRINTS OP QUOTE QUOTE CP { 
+					cout << "printString (\" \")" << endl; }
+	|	FUNCPRINTS OP  STRINGTEXT  CP { 
+						cout << "\tprintString ( " << $3 << " ); " << endl;
+		}
+	|	NUMBER CONTINUESTATE	{ 
+			if (symbolTableDL.find($1)->second->noArgs == 2){ 
+				cout << "\tr" << symbolTableDL.find($1)->second->arg1  << " = r" << symbolTableDL.find($1)->second->arg1 << " + 1 ;"  << endl;
+}
+
+			if (symbolTableDL.find($1)->second->noArgs == 3){ 
+				cout << "\tr" << symbolTableDL.find($1)->second->arg1  << " = r" << symbolTableDL.find($1)->second->arg1 << " + r" << symbolTableDL.find($1)->second->arg2 << ";"  << endl;
+
+			}
+			cout << "\tif( r" << symbolTableDL.find($1)->second->arg1 << " < r" << symbolTableDL.find($1)->second->arg2 << " ) goto StartDoLoop" << $1 << ";" << endl;
 			cout << "EndDoLoop" << $1 << ":" << endl;
 
 
 
 }
 	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER { 
-			cout << endl;
-			cout << "r" << symbolTable.find($3)->second << " = " << $5 << endl;
+			//cout << endl;
+			cout << "\tr" << symbolTable.find($3)->second << " = " << $5 << ";" << endl;
+			cout << "\tr" << regCounter << " = " << $6 << ";" << endl;
 			cout << "StartDoLoop" << $2 << ":" << endl;
-							DoLoop* dL = new DoLoop(2, symbolTable.find($3)->second,IntToString(regCounter++), $5, $5);
+							DoLoop* dL = new DoLoop(2, symbolTable.find($3)->second,IntToString(regCounter), $5, $5);
 							symbolTableDL[$2] = dL;
+							regCounter++;
 
 				
 			
 
 
 	}
-	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER NUMBER{ cout << "do " << "LABEL: " << $2 << " " << $3 << " = " << $5 << " Increment: " << $7 << endl;}
+	|	DOSTATE NUMBER NAME EQL NUMBER NUMBER NUMBER{ 
+
+			cout << "\tr" << symbolTable.find($3)->second << " = " << $5 << ";" << endl;
+			int A = regCounter++;
+			int B = regCounter++;
+			cout << "\tr" << regCounter << " = " << $6 << ";" << endl;
+			cout << "\tr" << A << " = " << $6 << ";" << endl;
+			cout << "\tr" << B << " = " << $7 << ";" << endl;
+			cout << "StartDoLoop" << $2 << ":" << endl;
+							DoLoop* dL = new DoLoop(3, symbolTable.find($3)->second,IntToString(A), IntToString(B), $5);
+							symbolTableDL[$2] = dL;
+							regCounter++;
+
+
+
+}
 	|	DOSTATE NUMBER NAME EQL NUMBER NAME NUMBER{ cout << "do " << "LABEL: " << $2 << " " << $3 << " = " << $5 << " Increment: " << $7 << endl;}
-	|	IFSTATE exp			{cout << "If Statement is: " << $2 << endl;}
+
 	|	ELSESTATE			{cout << "ELSE\n";}
+	|	IFSTATE OP list CP		{
+							cout << "list" << endl;
+
+
+						}
+
+
 ;
 
-exp:	
-		NUMBER		{	
 
-
-
-
-
-
-		}
-	|       NAME		{	
-
-
-
-				
-
-	
+list: 
+	exp compare exp		{ 
+					int A, B;
+					string C, D;
+					if (isalpha( $1[0]))C = symbolTable.find($1)->second ;
+					else { 
+						A = regCounter++;
+						C = IntToString(A);
+						cout << "r" << A << " = " << $1 << ";" << endl;
+					}
+					if (isalpha( $3[0]))D = symbolTable.find($3)->second ;
+					else { 
+						B = regCounter++;
+						D = IntToString(B);
+						cout << "r" << B << " = " << $3 << ";" << endl;
+					}
+					
+ 					
+					cout << "if( r" << C << " " << $2 << " r" << D << " ) goto " << endl;
+					
+					
 				}
-	|	exp DOTLT exp 	{	}
-	|	exp DOTEQ exp	{ 	}
-	|	exp DOTNEQ exp	{	}
-	|	exp DOTGE exp	{ 	}
-	|	exp ANDAND exp	{ 	}
-	|	exp OROR exp	{ 	}
-	|	OP exp CP	{			}
+;
+
+compare:
+
+	DOTLT			{
+					string str7 = "<";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+	|DOTEQ			{
+					string str7 = "==";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+	|DOTNEQ			{
+					string str7 = "!=";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+	|DOTGE			{
+					string str7 = ">";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+	|DOTNGE			{
+					string str7 = "!>";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+	|DOTNLE			{
+					string str7 = "!<";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+
+	|ANDAND			{
+					string str7 = "&&";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+	|OROR			{
+					string str7 = "||";
+					char *cstr5 = &str7[0u];
+					$$ = cstr5;
+}
+;
+
+
+exp:	
+		NUMBER		{ $$ = $1;}
+	|       NAME		{ $$ = $1;
+}
+
+	|	OP exp CP	{ $$ = $2;			}
 	|	exp ADD exp 	{	
-			cout << "ADDDO" << endl;	
-			cout << "v1 = " << $1 << " size: " << strlen($1) << "     v2 = " << $3 << " size: " << strlen($3) << endl;
+	
+			if (debugVar)cout << "ADD = " << $1 << " + " << $3 << endl;
 			string temp1, temp2;
+
+
 			if ( isalpha( $1[0] ) ){ 
-				//cout << "r" << symbolTable.find($1)->second << " = " ;
-				temp1 = "r" + symbolTable.find($1)->second;
+
+				if($1[0] == 'r'){
+					temp1 = $1;
+				}
+				else
+					temp1 = "r" + symbolTable.find($1)->second;
+
+
+
 			}
-			else {	
-				cout << "r" << regCounter << " = " << $1 << ";" << endl;
+			else {	// If number
+				cout << "\tr" << regCounter << " = " << $1 << ";" << endl;
 				temp1 = "r" + IntToString(regCounter);
 				regCounter++;
+
 				}
+
+	
 			
 			if ( isalpha( $3[0] ) ){
- 					//cout << "r" << symbolTable.find($3)->second << endl;
+
+				if($3[0] == 'r'){
+					temp2 = $3;
+				} 
+				else	{
 					temp2 = "r" + symbolTable.find($3)->second;
-				}
-			else{ 
-				cout << "r" << regCounter << " = " << $3 << ";" << endl;
+					}
+			}
+			else{ // If number
+				cout << "\tr" << regCounter << " = " << $3 << ";" << endl;
 				temp2 = "r" + IntToString(regCounter);
 				regCounter++;
 			}
+		
 
-			cout << "r" << regCounter << " = " << temp1 << " + " << temp2 << ";" << endl;
-			string tempCombine = "rBB" + IntToString(regCounter);
-			$$ = (char*)tempCombine.c_str();
+			cout << "\tr" << regCounter << " = " << temp1 << " + " << temp2 << ";" << endl;
+
+			string str5 = IntToString(regCounter);
+			string str6 = "r";
+			string str7 = str6 + str5;
+			char *cstr5 = &str7[0u];
+			$$ = cstr5;
 			regCounter++;
+			
 			
 
 }
-	|	exp SUB exp	{		}
-	|	exp MOD exp	{	 }
-	|	exp MUL exp	{
-			cout << "v1 = " << $1 << " size: " << strlen($1) << "     v2 = " << $3 << " size: " << strlen($3) << endl;
-			if ($1[0] == 'r')cout << "REG FOUND\n";
-			if ($3[0] == 'r')cout << "REG FOUND\n";
-			cout << "MUL" << endl;	
+	|	exp SUB exp	{		
+
+			if (debugVar)cout << "Sub = " << $1 << " - " << $3 << endl;
 			string temp1, temp2;
+
+
 			if ( isalpha( $1[0] ) ){ 
-				//cout << "r" << symbolTable.find($1)->second << " = " ;
-				temp1 = "r" + symbolTable.find($1)->second;
+
+				if($1[0] == 'r'){
+					temp1 = $1;
+				}
+				else
+					temp1 = "r" + symbolTable.find($1)->second;
+
+
+
 			}
-			else {	
-				cout << "r" << regCounter << " = " << $1 << ";" << endl;
+			else {	// If number
+				cout << "\tr" << regCounter << " = " << $1 << ";" << endl;
 				temp1 = "r" + IntToString(regCounter);
 				regCounter++;
+
 				}
+
+	
 			
 			if ( isalpha( $3[0] ) ){
- 					//cout << "r" << symbolTable.find($3)->second << endl;
+
+				if($3[0] == 'r'){
+					temp2 = $3;
+				} 
+				else	{
 					temp2 = "r" + symbolTable.find($3)->second;
-				}
-			else{ 
-				cout << "r" << regCounter << " = " << $3 << ";" << endl;
+					}
+			}
+			else{ // If number
+				cout << "\tr" << regCounter << " = " << $3 << ";" << endl;
 				temp2 = "r" + IntToString(regCounter);
 				regCounter++;
 			}
+		
 
-			cout << "r" << regCounter << " = " << temp1 << " * " << temp2 << ";" << endl;
-			string finalRegString = "r" + IntToString(regCounter);
+			cout << "\tr" << regCounter << " = " << temp1 << " - " << temp2 << ";" << endl;
+
+			string str5 = IntToString(regCounter);
+			string str6 = "r";
+			string str7 = str6 + str5;
+			char *cstr5 = &str7[0u];
+			$$ = cstr5;
 			regCounter++;
-			$$ = (char*)finalRegString.c_str();
+			
+
+			
+
+}
+	|	exp MOD exp	{	
+
+
+
+			if (debugVar)cout << "Sub = " << $1 << " - " << $3 << endl;
+			string temp1, temp2;
+
+
+			if ( isalpha( $1[0] ) ){ 
+
+				if($1[0] == 'r'){
+					temp1 = $1;
+				}
+				else
+					temp1 = "r" + symbolTable.find($1)->second;
+
+
+
+			}
+			else {	// If number
+				cout << "\tr" << regCounter << " = " << $1 << ";" << endl;
+				temp1 = "r" + IntToString(regCounter);
+				regCounter++;
+
+				}
+
+	
+			
+			if ( isalpha( $3[0] ) ){
+
+				if($3[0] == 'r'){
+					temp2 = $3;
+				} 
+				else	{
+					temp2 = "r" + symbolTable.find($3)->second;
+					}
+			}
+			else{ // If number
+				cout << "\tr" << regCounter << " = " << $3 << ";" << endl;
+				temp2 = "r" + IntToString(regCounter);
+				regCounter++;
+			}
+		
+
+			cout << "\tr" << regCounter << " = " << temp1 << " % " << temp2 << ";" << endl;
+
+			string str5 = IntToString(regCounter);
+			string str6 = "r";
+			string str7 = str6 + str5;
+			char *cstr5 = &str7[0u];
+			$$ = cstr5;
+			regCounter++;
+
+
+
+
+
+
+
+
+ }
+	|	exp MUL exp	{
+			
+			if (debugVar)cout << "MUL = " << $1 << " * " << $3 << endl;
+			string temp1, temp2;
+
+
+			if ( isalpha( $1[0] ) ){ 
+
+				if($1[0] == 'r'){
+					temp1 = $1;
+				}
+				else
+					temp1 = "r" + symbolTable.find($1)->second;
+
+
+
+			}
+			else {	// If number
+				cout << "\tr" << regCounter << " = " << $1 << ";" << endl;
+				temp1 = "r" + IntToString(regCounter);
+				regCounter++;
+
+				}
+
+	
+			
+			if ( isalpha( $3[0] ) ){
+
+				if($3[0] == 'r'){
+					temp2 = $3;
+				} 
+				else	{
+					temp2 = "r" + symbolTable.find($3)->second;
+					}
+			}
+			else{ // If number
+				cout << "\tr" << regCounter << " = " << $3 << ";" << endl;
+				temp2 = "r" + IntToString(regCounter);
+				regCounter++;
+			}
+		
+
+			cout << "\tr" << regCounter << " = " << temp1 << " * " << temp2 << ";" << endl;
+
+			string str5 = IntToString(regCounter);
+			string str6 = "r";
+			string str7 = str6 + str5;
+			char *cstr5 = &str7[0u];
+			$$ = cstr5;
+			regCounter++;
 			
 
 	}
-	|	exp DIV exp	{	}
-	|	exp EX exp 	{ 	}
+	|	exp DIV exp	{				
+			if (debugVar)cout << "Div = " << $1 << " * " << $3 << endl;
+			string temp1, temp2;
+
+
+			if ( isalpha( $1[0] ) ){ 
+
+				if($1[0] == 'r'){
+					temp1 = $1;
+				}
+				else
+					temp1 = "r" + symbolTable.find($1)->second;
+
+
+
+			}
+			else {	// If number
+				cout << "\tr" << regCounter << " = " << $1 << ";" << endl;
+				temp1 = "r" + IntToString(regCounter);
+				regCounter++;
+
+				}
+
+	
+			
+			if ( isalpha( $3[0] ) ){
+
+				if($3[0] == 'r'){
+					temp2 = $3;
+				} 
+				else	{
+					temp2 = "r" + symbolTable.find($3)->second;
+					}
+			}
+			else{ // If number
+				cout << "\tr" << regCounter << " = " << $3 << ";" << endl;
+				temp2 = "r" + IntToString(regCounter);
+				regCounter++;
+			}
+		
+
+			cout << "\tr" << regCounter << " = " << temp1 << " / " << temp2 << ";" << endl;
+
+			string str5 = IntToString(regCounter);
+			string str6 = "r";
+			string str7 = str6 + str5;
+			char *cstr5 = &str7[0u];
+			$$ = cstr5;
+			regCounter++;
+			
+
+
+
+
+}
+	|	exp EX exp 	{ 
+
+					if (debugVar)cout << "Exponent" << endl;
+					int power = 1;
+					int numm = atoi( $3 );
+					int A,B,C;
+					string X,Y;
+
+					if (isalpha( $1[0]))X = symbolTable.find($1)->second ;
+					else {
+						A = regCounter++;
+						X = IntToString(A);
+						cout << "\tr" << A << " = " << $1 <<  ";" << endl;
+					}
+
+					if (isalpha( $3[0]))Y = symbolTable.find($3)->second ;
+					else {
+						B = regCounter++;
+						Y = IntToString(B);
+						cout << "\tr" << B << " = " << $3 << ";" << endl;
+					}
+
+
+					for(int i=1; i <= numm; i++){
+     						//power *= $1;
+
+
+						
+						cout << "\tr" << regCounter++ << " = " << "r" << Y << ";" << endl;
+						cout << "\tr" << regCounter++ << " = " << "r" << (regCounter - 2) << " * " << "r" << (regCounter - 2) << ";" << endl; 
+					}
+				
+				
+					$$ = (char*)IntToString(regCounter - 1).c_str();
+
+
+	}
 ;			
 
 %%
